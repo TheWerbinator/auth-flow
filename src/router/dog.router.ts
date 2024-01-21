@@ -4,6 +4,7 @@ import "express-async-errors";
 import { validateRequest } from "zod-express-middleware";
 import { z } from "zod";
 import { intParseableString as intParseableString } from "../zod/parseableString.schema";
+import { authMiddleware } from "../auth-utils";
 
 const dogController = Router();
 // TODO
@@ -14,34 +15,22 @@ dogController.get("/dogs", async (req, res) => {
 });
 
 // TODO
-// Needs ______?
+// Needs Authentication
 dogController.post(
   "/dogs",
   validateRequest({
     body: z.object({
       name: z.string(),
-      userEmail: z.string().email(),
     }),
   }),
+  authMiddleware,
   async (req, res) => {
-    const { name, userEmail } = req.body;
-    const user = await prisma.user
-      .findFirstOrThrow({
-        where: {
-          email: userEmail,
-        },
-      })
-      .catch(() => null);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
+    const { name } = req.body;
     const dog = await prisma.dog
       .create({
         data: {
           name,
-          userEmail,
+          userEmail: req.user!.email,
         },
       })
       .catch(() => null);
