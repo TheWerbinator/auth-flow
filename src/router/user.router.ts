@@ -19,6 +19,8 @@ userController.patch(
     res,
     next
   ) => {
+    console.log(bodyEmail, paramsEmail);
+    
     if (paramsEmail === bodyEmail) {
       return res.status(400).json({
         message:
